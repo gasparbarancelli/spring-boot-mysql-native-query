@@ -1,0 +1,94 @@
+package com.gasparbarancelli.mysqlnativequery;
+
+import com.gasparbarancelli.mysqlnativequery.entity.Author;
+import com.gasparbarancelli.mysqlnativequery.entity.Post;
+import com.gasparbarancelli.mysqlnativequery.entity.Tag;
+import com.gasparbarancelli.mysqlnativequery.repository.AuthorRepository;
+import com.gasparbarancelli.mysqlnativequery.repository.PostNativeQuery;
+import com.gasparbarancelli.mysqlnativequery.repository.PostRepository;
+import com.gasparbarancelli.mysqlnativequery.repository.TagRepository;
+import com.gasparbarancelli.mysqlnativequery.to.PostTO;
+import org.springframework.boot.ApplicationArguments;
+import org.springframework.boot.ApplicationRunner;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+
+@Repository
+public class Demo implements ApplicationRunner {
+
+    private final TagRepository tagRepository;
+    private final AuthorRepository authorRepository;
+    private final PostRepository postRepository;
+    private final PostNativeQuery postNativeQuery;
+
+    public Demo(TagRepository tagRepository, AuthorRepository authorRepository, PostRepository postRepository, PostNativeQuery postNativeQuery) {
+        this.tagRepository = tagRepository;
+        this.authorRepository = authorRepository;
+        this.postRepository = postRepository;
+        this.postNativeQuery = postNativeQuery;
+    }
+
+    @Override
+    public void run(ApplicationArguments args) throws Exception {
+        var post = Post.of(
+                "Banco de dados MySQL com Spring Boot",
+                "O MySQL é um sistema de gerenciamento de banco de dados...",
+                "O MySQL é um sistema de gerenciamento de banco de dados, que utiliza a linguagem SQL como interface. É atualmente um dos sistemas de gerenciamento de bancos de dados mais populares..."
+        );
+
+        var author = Author.builder("Gaspar Barancelli Junior")
+                .linkedIn("https://www.linkedin.com/in/gaspar-barancelli-junior-77681881/")
+                .twitter("https://twitter.com/gasparbjr")
+                .faceBook("https://www.facebook.com/gaspar.barancelli/")
+                .summary("Senior software engineer at Dextra, passionate about technology, because I understand that through it we can bring people together and make our world a better")
+                .build();
+        authorRepository.save(author);
+        post.addAuthor(author);
+
+        var tag = Tag.of("Java");
+        tagRepository.save(tag);
+        post.addTag(tag);
+
+        var tags = List.of(
+                Tag.of("Mysql"),
+                Tag.of("Banco de Dados"),
+                Tag.of("JPA")
+        );
+        tagRepository.saveAll(tags);
+        post.addTags(tags);
+
+        postRepository.save(post);
+
+        postRepository.findAll().forEach(it -> {
+            System.out.printf("Post - ID[%d], TITLE[%s]%n", it.getId(), it.getTitle());
+            it.getAuthors().forEach(postAuthor -> {
+                System.out.printf("PostAuthor - ID[%d], AUTHOR_NAME[%s]%n", postAuthor.getId(), postAuthor.getAuthor().getName());
+            });
+            it.getTags().forEach(postTag -> {
+                System.out.printf("PostTag - ID[%d], TAG_DESCRIPTION[%s]%n", postTag.getId(), postTag.getTag().getDescription());
+            });
+        });
+
+        authorRepository.findAll().forEach(it -> {
+            System.out.printf("Author - ID[%d], NAME[%s]%n", it.getId(), it.getName());
+        });
+
+        tagRepository.findAll().forEach(it -> {
+            System.out.printf("Tag - ID[%d], DESCRIPTION[%s]%n", it.getId(), it.getDescription());
+        });
+
+        postNativeQuery.posts(null, null).forEach(it -> {
+            System.out.printf("PostTO - TITLE[%s], TAG[%s], AUTHOR[%s]%n", it.getPostTitle(), it.getTagDescription(), it.getAuthorName());
+        });
+
+        postNativeQuery.posts(null, tag.getId()).forEach(it -> {
+            System.out.printf("PostTO - TITLE[%s], TAG[%s], AUTHOR[%s]%n", it.getPostTitle(), it.getTagDescription(), it.getAuthorName());
+        });
+
+        postNativeQuery.posts(author.getId(), null).forEach(it -> {
+            System.out.printf("PostTO - TITLE[%s], TAG[%s], AUTHOR[%s]%n", it.getPostTitle(), it.getTagDescription(), it.getAuthorName());
+        });
+    }
+
+}
