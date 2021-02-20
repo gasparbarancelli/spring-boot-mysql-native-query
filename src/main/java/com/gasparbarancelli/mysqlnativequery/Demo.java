@@ -7,7 +7,6 @@ import com.gasparbarancelli.mysqlnativequery.repository.AuthorRepository;
 import com.gasparbarancelli.mysqlnativequery.repository.PostNativeQuery;
 import com.gasparbarancelli.mysqlnativequery.repository.PostRepository;
 import com.gasparbarancelli.mysqlnativequery.repository.TagRepository;
-import com.gasparbarancelli.mysqlnativequery.to.PostTO;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Repository;
